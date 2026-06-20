@@ -46,6 +46,36 @@ hr { margin-top: 2rem !important; margin-bottom: 2rem !important; }
     border-top: 6px solid #FF7900;
     padding-top: 1rem;
 }
+            
+/* KPI card styling */
+[data-testid="stMetric"] {
+    background-color: #F8F9FA;
+    border: 1px solid #E9ECEF;
+    border-left: 4px solid #FF7900;
+    border-radius: 4px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    height: 140px;            /* fixed height for all cards */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* align content to the top */
+}
+
+[data-testid="stMetricLabel"] {
+    font-weight: 600 !important;
+    color: #595959 !important;
+    font-size: 0.85rem !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-weight: 700 !important;
+    color: #000000 !important;
+    font-size: 1.6rem !important;
+}
+
+[data-testid="stMetricDelta"] {
+    font-size: 0.85rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -119,8 +149,8 @@ show_quality = st.sidebar.checkbox("Data quality review", value=True)
 show_kpis = st.sidebar.checkbox("KPI cards", value=True)
 show_regional = st.sidebar.checkbox("Regional performance", value=True)
 show_accountability = st.sidebar.checkbox("Accountability and trend", value=True)
-show_portfolio = st.sidebar.checkbox("Service Portfolio", value=True)
-
+show_findings = st.sidebar.checkbox("Key findings", value=True)
+show_portfolio = st.sidebar.checkbox("Service Portfolio chart", value=True)
 
 # Data quality review — six checks every dataset deserves
 if show_quality:
@@ -199,12 +229,9 @@ if show_kpis:
         yoy_display = "—"
         yoy_delta = None
 
-    # KPI 6 — Total Recharging Budget allocated
-    total_budget = df["Recharging Budget"].sum()
-
 
     # Layout the six KPIs as side-by-side cards
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     col1.metric(
         label="Achievement Rate",
@@ -232,13 +259,6 @@ if show_kpis:
         delta=yoy_delta,
         help="Change in delivered recharging from 2023 to 2024. Requires both years in view."
     )
-
-    col6.metric(
-        label="Total Budget",
-        value=f"{total_budget/1_000_000:.1f}M",
-        help="Total Recharging Budget allocated. Note: scope of this column is unclear in the documentation as it's likely separate from operational value figures."
-    )
-
 
 # CHARTS REGIONAL PERFORMANCE
 if show_regional:
@@ -402,44 +422,53 @@ if show_accountability:
 
 # CHART 3: 2023 vs 2024 by Service Portfolio
 if show_portfolio:
-  
     st.markdown("---")
     st.subheader("Performance by Service Portfolio")
-    st.caption("Achievement rate across portfolios.")
+    st.caption("Achievement rate across portfolios. Portfolio meanings to confirm with the team.")
 
-    left, right = st.columns([1, 1])
-    with left:
+    by_portfolio = df.groupby("Service Portfolio")[
+        ["Total Recharging", "Total Theoretical Country Recharging (PCR)"]
+    ].sum().reset_index()
 
-        by_portfolio = df.groupby("Service Portfolio")[
-            ["Total Recharging", "Total Theoretical Country Recharging (PCR)"]
-        ].sum().reset_index()
+    by_portfolio["Achievement Rate"] = (
+        by_portfolio["Total Recharging"]
+        / by_portfolio["Total Theoretical Country Recharging (PCR)"]
+        * 100
+    )
+    by_portfolio = by_portfolio.sort_values("Achievement Rate", ascending=True)
 
-        by_portfolio["Achievement Rate"] = (
-            by_portfolio["Total Recharging"]
-            / by_portfolio["Total Theoretical Country Recharging (PCR)"]
-            * 100
+    fig5 = px.bar(
+        by_portfolio,
+        x="Achievement Rate",
+        y="Service Portfolio",
+        orientation="h",
+        title="Achievement Rate by Service Portfolio",
+        text="Achievement Rate",
+        color_discrete_sequence=[ORANGE]
+    )
+    fig5.update_layout(
+        xaxis_title="Achievement Rate (%)",
+        yaxis_title="",
+        margin=dict(l=10, r=80, t=60, b=40),
+        xaxis=dict(range=[0, 90])
+    )
+    fig5.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+    fig5.update_layout(xaxis_title="Achievement Rate (%)", yaxis_title="")
+
+    st.plotly_chart(fig5, use_container_width=True)
+
+# CHART 4: Key findings
+if show_findings:
+    st.markdown("---")
+    st.subheader("Key findings")
+
+    with st.container(border=True):
+        st.markdown(
+            """
+            - **West Coast** shows the largest gap to plan, in both absolute and percentage terms.
+            - **East Coast** looks mid-pack in absolute terms but is among the worst in percentage terms. A conventional chart wouldn't flag it.
+            - **Maintenance grew and Repair declined** between 2023 and 2024. Possibly linked, but two years isn't enough to confirm.
+            - **Business Units are tightly clustered** within about 5 points. Under-achievement appears structural, not team-specific.
+            - **Service Portfolio results** need context. Knowing which portfolio performs well requires understanding what each represents.
+            """
         )
-        by_portfolio = by_portfolio.sort_values("Achievement Rate", ascending=True)
-
-        fig5 = px.bar(
-            by_portfolio,
-            x="Achievement Rate",
-            y="Service Portfolio",
-            orientation="h",
-            title="Achievement Rate by Service Portfolio",
-            text="Achievement Rate",
-            color_discrete_sequence=[ORANGE]
-        )
-        fig5.update_layout(
-            xaxis_title="Achievement Rate (%)",
-            yaxis_title="",
-            margin=dict(l=10, r=80, t=60, b=40),
-            xaxis=dict(range=[0, 90])
-        )
-        fig5.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-        fig5.update_layout(xaxis_title="Achievement Rate (%)", yaxis_title="")
-
-        st.plotly_chart(fig5, use_container_width=True)
-    
-    with right:
-        st.markdown("")
