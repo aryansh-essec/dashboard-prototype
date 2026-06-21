@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px 
 
-# cmd - python3 -m streamlit run app.py
 
 # Brand palette (Orange-inspired)
 ORANGE = "#FF7900"
@@ -92,11 +91,12 @@ hr { margin-top: 2rem !important; margin-bottom: 2rem !important; }
 st.markdown("""
 <div style="
     background-color: #0F0F0F;
-    padding: 60px 48px 60px 48px;
     margin: -6rem -5rem 2.5rem -5rem;
+    min-height: 200px;
     display: flex;
     align-items: center;
-    min-height: 140px;
+    padding-left: 48px;
+    padding-right: 48px;
 ">
     <h1 style="
         color: #FFFFFF;
@@ -121,12 +121,15 @@ df["Progress Rate"] = df["Progress Rate"].str.replace("%", "").astype(float)
 # Clean: turn Year "2023" (a number) into "2023" (text)
 df["Year"] = df["Year"].astype(str)
 
-# ============================================================
+# Data quality check is done at this stage, but presented at the end of the dashboard 
+# So users can see what was done to the data.
+
+
+
 # FILTERS (in the sidebar)
-# ============================================================
 st.sidebar.header("Filters")
 
-# Build the lists of options from the data itself, so they always match
+# Lists of options from the data itself, so they always match
 year_options = sorted(df["Year"].unique().tolist())
 region_options = sorted(df["Region"].unique().tolist())
 service_options = sorted(df["Service"].unique().tolist())
