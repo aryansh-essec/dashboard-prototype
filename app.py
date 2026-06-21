@@ -189,7 +189,6 @@ show_quality = st.sidebar.checkbox("Data quality review", value=True)
 # KPIs
 if show_kpis:
     st.subheader("Key Performance Indicators")
-    st.caption("Headline operational metrics across the filtered view.")
 
     # KPI 1 — Achievement Rate (actual delivered vs theoretical plan)
     total_actual = df["Total Recharging"].sum()
@@ -253,7 +252,7 @@ if show_kpis:
 if show_regional:
     st.markdown("---")
     st.subheader("Regional performance")
-    st.caption("Two views of the same data: absolute amounts and gap as a percentage of plan.")
+    st.caption("Two views of the same data: absolute amounts and gap as a percentage of plan")
 
     left, right = st.columns(2, gap="large")
 
@@ -342,7 +341,7 @@ if show_regional:
 if show_breakdowns:
     st.markdown("---")
     st.subheader("Performance breakdowns")
-    st.caption("Performance by Business Unit and year-over-year change by Service.")
+    st.caption("Performance by Business Unit and year-over-year change by Service")
 
     left, right = st.columns(2, gap="large")
 
@@ -413,7 +412,7 @@ if show_breakdowns:
 if show_portfolio:
     st.markdown("---")
     st.subheader("Performance by Service Portfolio")
-    st.caption("Achievement rate across portfolios. Portfolio meanings to confirm with the team.")
+    st.caption("Achievement rate across portfolios")
 
     by_portfolio = df.groupby("Service Portfolio")[
         ["Total Recharging", "Total Theoretical Country Recharging (PCR)"]
@@ -471,7 +470,8 @@ if show_quality:
         st.write(f"Rows: {len(df)}  |  Columns: {len(df.columns)}")
 
         # (2) Column types — is every column the kind of thing it should be?
-        st.markdown("**2. Column types AFTER cleaning (Year & Progress Rate)**")
+        st.markdown("**2. Column types AFTER cleaning**")
+        st.write("Year (number to text) & Progress Rate (text to number)")
         st.write(df.dtypes.astype(str))
 
         # (3) Missing values — any blank cells?
