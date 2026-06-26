@@ -25,8 +25,8 @@ def style_chart(fig):
     return fig
 
 st.set_page_config(
-    page_title="Orange Dashboard Proposal",
-    page_icon="🟠",
+    page_title="Dashboard Prototype",
+    page_icon="📊",
     layout="wide"
 )
 
